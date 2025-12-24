@@ -1,5 +1,6 @@
 package com.example.hobbyyk_new.view.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -56,18 +57,25 @@ fun CommunityListScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(viewModel.communities) { community ->
-                    CommunityItem(community)
+                    CommunityItem(
+                        community = community,
+                        onClick = {
+                            navController.navigate("detail_community/${community.id}")
+                        }
+                    )
                 }
             }
         }
     }
 }
 @Composable
-fun CommunityItem(community: Community) {
+fun CommunityItem(community: Community, onClick: () -> Unit) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable{ onClick() }
     ) {
         Column {
             val imageUrl = "${Constants.BASE_URL}uploads/${community.foto_url}"
