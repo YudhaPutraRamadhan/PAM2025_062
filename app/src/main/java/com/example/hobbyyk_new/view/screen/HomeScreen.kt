@@ -7,17 +7,27 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.hobbyyk_new.data.datastore.UserStore
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userStore = UserStore(context)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -48,6 +58,25 @@ fun HomeScreen(navController: NavController) {
                 icon = Icons.Default.Event,
                 onClick = { /* Nanti diarahkan ke activity_list */ }
             )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            OutlinedButton(
+                onClick = {
+                    scope.launch {
+                        userStore.clearSession()
+
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red)
+            ) {
+                Text("Keluar (Logout)")
+            }
         }
     }
 }
