@@ -1,4 +1,4 @@
-package com.example.hobbyyk_new.view.screen
+package com.example.hobbyyk_new.view.screen.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hobbyyk_new.R
+import com.example.hobbyyk_new.viewmodel.LandingAppViewModel
 import kotlinx.coroutines.delay
 
 @Composable

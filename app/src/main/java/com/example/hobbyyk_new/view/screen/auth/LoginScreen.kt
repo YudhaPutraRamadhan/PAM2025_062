@@ -1,24 +1,40 @@
-package com.example.hobbyyk_new.view.screen
+package com.example.hobbyyk_new.view.screen.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.hobbyyk_new.viewmodel.LoginViewModel
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun LoginScreen(
+    navController: NavController,
     onLoginSuccess: (String) -> Unit
 ) {
     val context = LocalContext.current
     val viewModel: LoginViewModel = viewModel()
+
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.isLoginSuccess) {
         if (viewModel.isLoginSuccess) {
@@ -52,8 +68,14 @@ fun LoginScreen(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
             label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = "Toggle Password")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -74,6 +96,22 @@ fun LoginScreen(
             } else {
                 Text("Masuk")
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Belum punya akun? ", color = Color.Gray)
+            Text(
+                text = "Daftar",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { navController.navigate("register") }
+            )
         }
     }
 }

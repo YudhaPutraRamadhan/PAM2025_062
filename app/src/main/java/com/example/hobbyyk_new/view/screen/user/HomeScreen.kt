@@ -1,5 +1,6 @@
-package com.example.hobbyyk_new.view.screen
+package com.example.hobbyyk_new.view.screen.user
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -73,7 +74,7 @@ fun HomeScreen(navController: NavController) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red)
+                border = BorderStroke(1.dp, Color.Red)
             ) {
                 Text("Keluar (Logout)")
             }

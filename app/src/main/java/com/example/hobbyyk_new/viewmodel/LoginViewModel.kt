@@ -1,4 +1,4 @@
-package com.example.hobbyyk_new.view.screen
+package com.example.hobbyyk_new.viewmodel
 
 import android.app.Application
 import android.util.Log
