@@ -39,7 +39,8 @@ import com.example.hobbyyk_new.viewmodel.CommunityDetailViewModel
 @Composable
 fun CommunityDetailScreen(
     navController: NavController,
-    communityId: Int
+    communityId: Int,
+    isAdminPreview: Boolean = false
 ) {
     val viewModel: CommunityDetailViewModel = viewModel()
     val context = LocalContext.current
@@ -60,7 +61,7 @@ fun CommunityDetailScreen(
             )
         },
         bottomBar = {
-            if (viewModel.community != null) {
+            if (!isAdminPreview && viewModel.community != null) {
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
@@ -155,6 +156,11 @@ fun CommunityDetailScreen(
 
                                     Icon(Icons.Default.Group, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
                                     Text(text = " ${viewModel.memberCount} Anggota", color = Color.Gray, fontSize = 12.sp)
+
+                                    Text(text = " • ", color = Color.Gray, fontSize = 12.sp)
+
+                                    Icon(Icons.Default.Favorite, contentDescription = null, tint = Color.Red, modifier = Modifier.size(16.dp))
+                                    Text(text = " ${viewModel.likeCount} Suka", color = Color.Gray, fontSize = 12.sp)
                                 }
 
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
