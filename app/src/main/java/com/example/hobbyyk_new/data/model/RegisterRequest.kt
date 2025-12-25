@@ -7,3 +7,8 @@ data class RegisterRequest(
     val confPassword: String,
     val role: String
 )
+
+data class VerifyOtpRequest(
+    val email: String,
+    val otp: String
+)
