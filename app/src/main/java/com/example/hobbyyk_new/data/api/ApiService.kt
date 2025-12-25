@@ -42,6 +42,9 @@ interface ApiService {
     @GET("communities/{id}")
     suspend fun getCommunityDetail(@Path("id") id: Int): Response<Community>
 
+    @GET("my-community")
+    suspend fun getMyCommunity(): Response<Community?>
+
     @GET("users")
     suspend fun getUsers(): Response<List<User>>
 
@@ -80,9 +83,11 @@ interface ApiService {
     @POST("like")
     suspend fun toggleLike(@Body request: ActionRequest): Response<Void>
 
-    // TOGGLE JOIN
     @POST("join")
     suspend fun toggleJoin(@Body request: ActionRequest): Response<Void>
-    // Endpoint VERIFIKASI OTP (Nanti kita buat modelnya kalau sudah sampai layar OTP)
-    // Untuk sementara Login & Register dulu yang penting
+
+    data class ResendOtpRequest(val email: String)
+
+    @POST("resend-otp")
+    suspend fun resendOtp(@Body request: ResendOtpRequest): Response<Void>
 }
