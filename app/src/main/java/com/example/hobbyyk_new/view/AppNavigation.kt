@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.hobbyyk_new.view.screen.AdminCommunityScreen
 import com.example.hobbyyk_new.view.screen.CommunityDetailScreen
 import com.example.hobbyyk_new.view.screen.CommunityListScreen
 import com.example.hobbyyk_new.view.screen.HomeScreen
 import com.example.hobbyyk_new.view.screen.LandingApp
 import com.example.hobbyyk_new.view.screen.LoginScreen
 import com.example.hobbyyk_new.view.screen.SuperAdminDashboard
+import com.example.hobbyyk_new.view.screen.UserListScreen
 
 @Composable
 fun AppNavigation() {
@@ -69,6 +71,12 @@ fun AppNavigation() {
 
         composable("community_list") {
             CommunityListScreen(navController)
+        }
+        composable("user_list") {
+            UserListScreen(navController)
+        }
+        composable("admin_community_list") {
+            AdminCommunityScreen(navController)
         }
     }
 }
