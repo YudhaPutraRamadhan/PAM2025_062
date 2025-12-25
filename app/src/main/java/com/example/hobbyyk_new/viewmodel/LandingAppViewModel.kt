@@ -31,11 +31,12 @@ class LandingAppViewModel(application: Application) : AndroidViewModel(applicati
             if (!token.isNullOrEmpty()) {
                 RetrofitClient.authToken = token
 
-                if (role == "super_admin" || role == "admin") {
-                    startDestination = "super_admin_dashboard"
-                } else {
-                    startDestination = "home"
+                startDestination = when (role) {
+                    "super_admin" -> "super_admin_dashboard"
+                    "admin_komunitas" -> "admin_dashboard"
+                    else -> "home"
                 }
+
             } else {
                 startDestination = "login"
             }

@@ -6,7 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.hobbyyk_new.view.screen.admin.AdminCommunityScreen
+import com.example.hobbyyk_new.view.screen.admin.AdminDashboard
+import com.example.hobbyyk_new.view.screen.admin.CreateCommunityScreen
+import com.example.hobbyyk_new.view.screen.admin.EditCommunityScreen
 import com.example.hobbyyk_new.view.screen.user.CommunityDetailScreen
 import com.example.hobbyyk_new.view.screen.user.CommunityListScreen
 import com.example.hobbyyk_new.view.screen.user.HomeScreen
@@ -38,14 +40,21 @@ fun AppNavigation() {
             LoginScreen(
                 navController = navController,
                 onLoginSuccess = { role ->
-                    if (role == "super_admin" || role == "admin") {
-
-                        navController.navigate("super_admin_dashboard") {
-                            popUpTo("login") { inclusive = true }
+                    when (role) {
+                        "super_admin" -> {
+                            navController.navigate("super_admin_dashboard") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }
-                    } else {
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
+                        "admin_komunitas" -> {
+                            navController.navigate("admin_dashboard") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        }
+                        else -> {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }
                     }
                 }
@@ -61,18 +70,19 @@ fun AppNavigation() {
         }
 
         composable(
-            route = "detail_community/{communityId}",
+            route = "detail_community/{communityId}?isAdmin={isAdmin}",
             arguments = listOf(
-                androidx.navigation.navArgument("communityId") {
-                    type = androidx.navigation.NavType.IntType // Tipe datanya Angka (Int)
+                navArgument("communityId") { type = NavType.IntType },
+                navArgument("isAdmin") {
+                    type = NavType.BoolType
+                    defaultValue = false
                 }
             )
         ) { backStackEntry ->
-            // Ambil ID dari paket yang dikirim
             val id = backStackEntry.arguments?.getInt("communityId") ?: 0
+            val isAdmin = backStackEntry.arguments?.getBoolean("isAdmin") ?: false
 
-            // Panggil Layarnya
-            CommunityDetailScreen(navController, id)
+            CommunityDetailScreen(navController, id, isAdminPreview = isAdmin)
         }
 
         composable("home") {
@@ -89,8 +99,8 @@ fun AppNavigation() {
         composable("user_list") {
             UserListScreen(navController)
         }
-        composable("admin_community_list") {
-            AdminCommunityScreen(navController)
+        composable("admin_dashboard") {
+            AdminDashboard(navController)
         }
         composable("super_admin_communities") {
             SuperAdminCommunityList(navController = navController)
@@ -99,5 +109,16 @@ fun AppNavigation() {
             RegisterScreen(navController = navController)
         }
 
+        composable("create_community") {
+            CreateCommunityScreen(navController = navController)
+        }
+
+        composable(
+            route = "edit_community/{communityId}",
+            arguments = listOf(androidx.navigation.navArgument("communityId") { type = androidx.navigation.NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("communityId") ?: 0
+            EditCommunityScreen(navController = navController, communityId = id)
+        }
     }
 }
