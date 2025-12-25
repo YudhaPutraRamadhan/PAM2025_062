@@ -51,7 +51,7 @@ fun SuperAdminDashboard(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Nanti */ },
+                onClick = { navController.navigate("user_list") },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
             ) {
@@ -61,7 +61,7 @@ fun SuperAdminDashboard(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Nanti */ },
+                onClick = { navController.navigate("admin_community_list") },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
             ) {
