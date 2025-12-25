@@ -15,80 +15,20 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class AdminCommunityViewModel : ViewModel() {
-    var communities by mutableStateOf<List<Community>>(emptyList())
-    var isLoading by mutableStateOf(true)
+    var myCommunity by mutableStateOf<Community?>(null)
+
+    var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
-    fun fetchCommunities() {
+    fun fetchMyCommunity() {
         viewModelScope.launch {
             isLoading = true
             try {
-                val response = RetrofitClient.instance.getCommunities()
+                val response = RetrofitClient.instance.getMyCommunity()
                 if (response.isSuccessful) {
-                    communities = response.body() ?: emptyList()
+                    myCommunity = response.body()
                 } else {
-                    errorMessage = "Gagal memuat: ${response.message()}"
-                }
-            } catch (e: Exception) {
-                errorMessage = "Error: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-    fun deleteCommunity(id: Int) {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitClient.instance.deleteCommunity(id)
-                if (response.isSuccessful) {
-                    communities = communities.filter { it.id != id }
-                } else {
-                    errorMessage = "Gagal menghapus: ${response.message()}"
-                }
-            } catch (e: Exception) {
-                errorMessage = "Error: ${e.message}"
-            }
-        }
-    }
-
-    fun updateCommunity(
-        id: Int, nama: String, lokasi: String, deskripsi: String,
-        kategori: String, kontak: String, linkGrup: String,
-        newLogoFile: File?,
-        newBannerFile: File?
-    ) {
-        viewModelScope.launch {
-            isLoading = true
-            try {
-                val namaPart = nama.toRequestBody("text/plain".toMediaTypeOrNull())
-                val lokasiPart = lokasi.toRequestBody("text/plain".toMediaTypeOrNull())
-                val deskripsiPart = deskripsi.toRequestBody("text/plain".toMediaTypeOrNull())
-                val kategoriPart = kategori.toRequestBody("text/plain".toMediaTypeOrNull())
-                val kontakPart = kontak.toRequestBody("text/plain".toMediaTypeOrNull())
-                val linkGrupPart = linkGrup.toRequestBody("text/plain".toMediaTypeOrNull())
-
-                var logoMultipart: MultipartBody.Part? = null
-                if (newLogoFile != null) {
-                    val requestLogo = newLogoFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                    logoMultipart = MultipartBody.Part.createFormData("file", newLogoFile.name, requestLogo)
-                }
-
-                var bannerMultipart: MultipartBody.Part? = null
-                if (newBannerFile != null) {
-                    val requestBanner = newBannerFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                    bannerMultipart = MultipartBody.Part.createFormData("banner", newBannerFile.name, requestBanner)
-                }
-
-                val response = RetrofitClient.instance.updateCommunity(
-                    id, namaPart, lokasiPart, deskripsiPart, kategoriPart, kontakPart, linkGrupPart,
-                    logoMultipart, bannerMultipart
-                )
-
-                if (response.isSuccessful) {
-                    fetchCommunities()
-                } else {
-                    errorMessage = "Gagal update: ${response.message()}"
+                    errorMessage = "Gagal memuat data"
                 }
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
@@ -117,7 +57,8 @@ class AdminCommunityViewModel : ViewModel() {
                 val logoMultipart = MultipartBody.Part.createFormData("file", logoFile.name, requestLogo)
 
                 val requestBanner = bannerFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                val bannerMultipart = MultipartBody.Part.createFormData("banner", bannerFile.name, requestBanner)
+                val bannerName = "banner_${System.currentTimeMillis()}.jpg"
+                val bannerMultipart = MultipartBody.Part.createFormData("banner", bannerName, requestBanner)
 
                 val response = RetrofitClient.instance.createCommunity(
                     namaPart, lokasiPart, deskripsiPart,
@@ -125,9 +66,76 @@ class AdminCommunityViewModel : ViewModel() {
                     logoMultipart, bannerMultipart
                 )
 
-                if (response.isSuccessful) fetchCommunities()
-                else errorMessage = "Gagal: ${response.message()}"
+                if (response.isSuccessful) {
+                    fetchMyCommunity()
+                } else {
+                    errorMessage = "Gagal membuat: ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
+    fun deleteCommunity(id: Int) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val response = RetrofitClient.instance.deleteCommunity(id)
+                if (response.isSuccessful) {
+                    myCommunity = null
+                } else {
+                    errorMessage = "Gagal menghapus"
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun updateCommunity(
+        id: Int, nama: String, lokasi: String, deskripsi: String,
+        kategori: String, kontak: String, linkGrup: String,
+        newLogoFile: File?, newBannerFile: File?
+    ) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val namaPart = nama.toRequestBody("text/plain".toMediaTypeOrNull())
+                val lokasiPart = lokasi.toRequestBody("text/plain".toMediaTypeOrNull())
+                val deskripsiPart = deskripsi.toRequestBody("text/plain".toMediaTypeOrNull())
+                val kategoriPart = kategori.toRequestBody("text/plain".toMediaTypeOrNull())
+                val kontakPart = kontak.toRequestBody("text/plain".toMediaTypeOrNull())
+                val linkGrupPart = linkGrup.toRequestBody("text/plain".toMediaTypeOrNull())
+
+                var logoMultipart: MultipartBody.Part? = null
+                if (newLogoFile != null) {
+                    val requestLogo = newLogoFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val fileName = "logo_${System.currentTimeMillis()}.jpg"
+                    logoMultipart = MultipartBody.Part.createFormData("file", fileName, requestLogo)
+                }
+
+                var bannerMultipart: MultipartBody.Part? = null
+                if (newBannerFile != null) {
+                    val requestBanner = newBannerFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val fileName = "banner_${System.currentTimeMillis()}.jpg"
+                    bannerMultipart = MultipartBody.Part.createFormData("banner", fileName, requestBanner)
+                }
+
+                val response = RetrofitClient.instance.updateCommunity(
+                    id, namaPart, lokasiPart, deskripsiPart, kategoriPart, kontakPart, linkGrupPart,
+                    logoMultipart, bannerMultipart
+                )
+
+                if (response.isSuccessful) {
+                    fetchMyCommunity()
+                } else {
+                    errorMessage = "Gagal update: ${response.message()}"
+                }
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
             } finally {
