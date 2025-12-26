@@ -6,6 +6,7 @@ import com.example.hobbyyk_new.data.model.CreateUserRequest
 import com.example.hobbyyk_new.data.model.GenericResponse
 import com.example.hobbyyk_new.data.model.LoginRequest
 import com.example.hobbyyk_new.data.model.LoginResponse
+import com.example.hobbyyk_new.data.model.ProfileResponse
 import com.example.hobbyyk_new.data.model.RegisterRequest
 import com.example.hobbyyk_new.data.model.UpdateCommunityRequest
 import com.example.hobbyyk_new.data.model.UpdateUserRequest
@@ -116,5 +117,34 @@ interface ApiService {
     @DELETE("activities/{id}")
     suspend fun deleteActivity(
         @Path("id") id: Int
+    ): Response<GenericResponse>
+
+    @GET("users/me")
+    suspend fun getMyProfile(): Response<ProfileResponse>
+
+    @Multipart
+    @PATCH("users/profile")
+    suspend fun updateProfile(
+        @Part("bio") bio: RequestBody,
+        @Part("no_hp") noHp: RequestBody,
+        @Part profile_pic: MultipartBody.Part?
+    ): Response<GenericResponse>
+
+    @POST("users/me/password/otp")
+    suspend fun reqChangePassOtp(): Response<GenericResponse>
+
+    @PATCH("users/me/password/verify")
+    suspend fun verifyChangePass(
+        @Body request: com.example.hobbyyk_new.data.model.ChangePasswordRequest
+    ): Response<GenericResponse>
+
+    @POST("users/me/email/otp")
+    suspend fun reqChangeEmailOtp(
+        @Body request: com.example.hobbyyk_new.data.model.EmailRequest
+    ): Response<GenericResponse>
+
+    @PATCH("users/me/email/verify")
+    suspend fun verifyChangeEmail(
+        @Body request: com.example.hobbyyk_new.data.model.VerifyEmailRequest
     ): Response<GenericResponse>
 }
