@@ -1,7 +1,9 @@
 package com.example.hobbyyk_new.data.api
 
+import com.example.hobbyyk_new.data.model.Activity
 import com.example.hobbyyk_new.data.model.Community
 import com.example.hobbyyk_new.data.model.CreateUserRequest
+import com.example.hobbyyk_new.data.model.GenericResponse
 import com.example.hobbyyk_new.data.model.LoginRequest
 import com.example.hobbyyk_new.data.model.LoginResponse
 import com.example.hobbyyk_new.data.model.RegisterRequest
@@ -35,34 +37,25 @@ interface ApiService {
         @Part file: MultipartBody.Part,
         @Part banner: MultipartBody.Part
     ): Response<Void>
-
     @GET("communities")
     suspend fun getCommunities(): Response<List<Community>>
-
     @GET("communities/{id}")
     suspend fun getCommunityDetail(@Path("id") id: Int): Response<Community>
-
     @GET("my-community")
     suspend fun getMyCommunity(): Response<Community?>
-
     @GET("users")
     suspend fun getUsers(): Response<List<User>>
-
     @DELETE("communities/{id}")
     suspend fun deleteCommunity(@Path("id") id: Int): Response<Void>
-
     @DELETE("users/{id}")
     suspend fun deleteUser(@Path("id") id: Int): Response<Void>
-
     @PATCH("users/{id}")
     suspend fun updateUser(
         @Path("id") id: Int,
         @Body request: UpdateUserRequest
     ): Response<Void>
-
     @POST("users/admin")
     suspend fun createUser(@Body request: CreateUserRequest): Response<Void>
-
     @Multipart
     @PATCH("communities/{id}")
     suspend fun updateCommunity(
@@ -77,17 +70,51 @@ interface ApiService {
         @Part newLogo: MultipartBody.Part?,
         @Part newBanner: MultipartBody.Part?
     ): Response<Void>
-
     data class ActionRequest(val communityId: Int)
-
     @POST("like")
     suspend fun toggleLike(@Body request: ActionRequest): Response<Void>
-
     @POST("join")
     suspend fun toggleJoin(@Body request: ActionRequest): Response<Void>
-
     data class ResendOtpRequest(val email: String)
-
     @POST("resend-otp")
     suspend fun resendOtp(@Body request: ResendOtpRequest): Response<Void>
+
+    @GET("activities/community/{communityId}")
+    suspend fun getActivitiesByCommunity(
+        @Path("communityId") communityId: Int
+    ): Response<List<Activity>>
+
+    @GET("activities/{id}")
+    suspend fun getActivityById(
+        @Path("id") id: Int
+    ): Response<Activity>
+
+    @Multipart
+    @POST("activities")
+    suspend fun createActivity(
+        @Part("judul_kegiatan") judul: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("lokasi") lokasi: RequestBody,
+        @Part("tanggal") tanggal: RequestBody,
+        @Part("waktu") waktu: RequestBody,
+        @Part("communityId") communityId: RequestBody,
+        @Part foto_kegiatan: List<MultipartBody.Part>
+    ): Response<GenericResponse>
+
+    @Multipart
+    @PATCH("activities/{id}")
+    suspend fun updateActivity(
+        @Path("id") id: Int,
+        @Part("judul_kegiatan") judul: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("lokasi") lokasi: RequestBody,
+        @Part("tanggal") tanggal: RequestBody,
+        @Part("waktu") waktu: RequestBody,
+        @Part foto_kegiatan: List<MultipartBody.Part>?
+    ): Response<GenericResponse>
+
+    @DELETE("activities/{id}")
+    suspend fun deleteActivity(
+        @Path("id") id: Int
+    ): Response<GenericResponse>
 }
