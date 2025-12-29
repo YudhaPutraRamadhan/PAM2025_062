@@ -3,6 +3,7 @@ package com.example.hobbyyk_new.viewmodel
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -25,6 +26,8 @@ class ActivityViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
     var successMessage by mutableStateOf<String?>(null)
+
+    var feedList = mutableStateListOf<Activity>()
 
     fun getActivities(communityId: Int) {
         viewModelScope.launch {
@@ -166,6 +169,25 @@ class ActivityViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun fetchActivityFeed() {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val response = RetrofitClient.instance.getAllActivities()
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        feedList.clear()
+                        feedList.addAll(it)
+                    }
+                }
+            } catch (e: Exception) {
+                errorMessage = e.message
             } finally {
                 isLoading = false
             }

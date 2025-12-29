@@ -44,10 +44,11 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    fun updateProfile(bio: String, noHp: String, imageUri: Uri?, context: Context) {
+    fun updateProfile(username: String, bio: String, noHp: String, imageUri: Uri?, context: Context) {
         viewModelScope.launch {
             isLoading = true
             try {
+                val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
                 val bioPart = bio.toRequestBody("text/plain".toMediaTypeOrNull())
                 val hpPart = noHp.toRequestBody("text/plain".toMediaTypeOrNull())
 
@@ -57,7 +58,7 @@ class ProfileViewModel : ViewModel() {
                     MultipartBody.Part.createFormData("profile_pic", file.name, reqFile)
                 } else null
 
-                val response = RetrofitClient.instance.updateProfile(bioPart, hpPart, imagePart)
+                val response = RetrofitClient.instance.updateProfile(usernamePart, bioPart, hpPart, imagePart)
                 if (response.isSuccessful) {
                     message = "Profil berhasil diperbarui!"
                     fetchProfile()
