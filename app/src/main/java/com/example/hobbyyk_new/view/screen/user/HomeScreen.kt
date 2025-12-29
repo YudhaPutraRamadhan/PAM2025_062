@@ -69,9 +69,9 @@ fun HomeScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             MenuCard(
-                title = "Data Aktivitas",
+                title = "Aktivitas Terbaru",
                 icon = Icons.Default.Event,
-                onClick = { /* Nanti diarahkan ke activity_list */ }
+                onClick = { navController.navigate("activity_feed") }
             )
 
             Spacer(modifier = Modifier.height(48.dp))
