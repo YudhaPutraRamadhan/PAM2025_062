@@ -35,6 +35,7 @@ fun EditProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = viewModel()
     val context = LocalContext.current
 
+    var username by remember { mutableStateOf ("") }
     var bio by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -45,6 +46,7 @@ fun EditProfileScreen(navController: NavController) {
 
     LaunchedEffect(viewModel.userProfile) {
         viewModel.userProfile?.let {
+            if (username.isEmpty()) username = it.username
             if (bio.isEmpty()) bio = it.bio ?: ""
             if (noHp.isEmpty()) noHp = it.no_hp ?: ""
         }
@@ -116,6 +118,16 @@ fun EditProfileScreen(navController: NavController) {
                     }
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 OutlinedTextField(
@@ -136,7 +148,7 @@ fun EditProfileScreen(navController: NavController) {
 
                 Button(
                     onClick = {
-                        viewModel.updateProfile(bio, noHp, selectedImageUri, context)
+                        viewModel.updateProfile(username, bio, noHp, selectedImageUri, context)
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {
