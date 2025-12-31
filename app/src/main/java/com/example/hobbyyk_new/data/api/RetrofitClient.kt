@@ -1,6 +1,8 @@
 package com.example.hobbyyk_new.data.api
 
+import com.example.hobbyyk_new.data.remote.AuthInterceptor
 import com.example.hobbyyk_new.utils.Constants
+import com.example.hobbyyk_new.utils.SessionManager
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -26,6 +28,8 @@ object RetrofitClient {
             val request = requestBuilder.build()
             chain.proceed(request)
         }
+
+        .addInterceptor(AuthInterceptor())
         .build()
 
     val instance: ApiService by lazy {
