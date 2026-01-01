@@ -8,6 +8,7 @@ import com.example.hobbyyk_new.data.model.LoginRequest
 import com.example.hobbyyk_new.data.model.LoginResponse
 import com.example.hobbyyk_new.data.model.ProfileResponse
 import com.example.hobbyyk_new.data.model.RegisterRequest
+import com.example.hobbyyk_new.data.model.RequestAdminPayload
 import com.example.hobbyyk_new.data.model.UpdateCommunityRequest
 import com.example.hobbyyk_new.data.model.UpdateUserRequest
 import com.example.hobbyyk_new.data.model.User
@@ -42,6 +43,8 @@ interface ApiService {
     suspend fun getCommunities(): Response<List<Community>>
     @GET("communities/{id}")
     suspend fun getCommunityDetail(@Path("id") id: Int): Response<Community>
+    @GET("communities/{id}")
+    suspend fun getCommunityById(@Path("id") id: Int): Response<Community>
     @GET("my-community")
     suspend fun getMyCommunity(): Response<Community?>
     @GET("users")
@@ -151,4 +154,9 @@ interface ApiService {
 
     @GET("activities/feed")
     suspend fun getAllActivities(): Response<List<Activity>>
+
+    @POST("request-admin")
+    suspend fun requestAdminAccount(
+        @Body request: RequestAdminPayload
+    ): Response<GenericResponse>
 }
