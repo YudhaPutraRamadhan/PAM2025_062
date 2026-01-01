@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.hobbyyk_new.view.screen.auth.RequestAdminScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -296,6 +297,10 @@ fun AppNavigation() {
 
         composable("activity_feed") {
             ActivityFeedScreen(navController)
+        }
+
+        composable("request_admin") {
+            RequestAdminScreen(navController)
         }
     }
 }
