@@ -38,6 +38,24 @@ class AdminCommunityViewModel : ViewModel() {
         }
     }
 
+    fun fetchCommunityById(id: Int) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val response = RetrofitClient.instance.getCommunityById(id)
+                if (response.isSuccessful) {
+                    myCommunity = response.body()
+                } else {
+                    errorMessage = "Gagal memuat data detail: ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
     fun createCommunity(
         nama: String, lokasi: String, deskripsi: String,
         kategori: String, kontak: String, linkGrup: String,
@@ -132,7 +150,7 @@ class AdminCommunityViewModel : ViewModel() {
                 )
 
                 if (response.isSuccessful) {
-                    fetchMyCommunity()
+                    fetchCommunityById(id)
                 } else {
                     errorMessage = "Gagal update: ${response.message()}"
                 }
