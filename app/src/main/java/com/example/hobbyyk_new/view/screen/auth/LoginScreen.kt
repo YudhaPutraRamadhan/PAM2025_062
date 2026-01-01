@@ -113,5 +113,36 @@ fun LoginScreen(
                 modifier = Modifier.clickable { navController.navigate("register") }
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 30.dp),
+            thickness = 2.dp,
+            color = Color.LightGray.copy(alpha = 1f)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Ingin mendaftarkan komunitas?",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Ajukan Sebagai Admin",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    navController.navigate("request_admin")
+                }
+            )
+        }
     }
 }
