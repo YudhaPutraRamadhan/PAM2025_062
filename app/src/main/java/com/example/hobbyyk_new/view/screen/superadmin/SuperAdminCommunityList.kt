@@ -3,10 +3,12 @@ package com.example.hobbyyk_new.view.screen.superadmin
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items // <--- PENTING: Import ini jangan sampai hilang
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -62,13 +64,22 @@ fun SuperAdminCommunityList(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Semua Komunitas (Super Admin)", fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+                title = { Text("Kelola Komunitas (Super Admin)", fontSize = 16.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("create_community") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Buat Komunitas")
+            }
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
@@ -82,6 +93,12 @@ fun SuperAdminCommunityList(navController: NavController) {
                     items(viewModel.communities) { community ->
                         SuperAdminCommunityItem(
                             community = community,
+                            onClick = {
+                                navController.navigate("detail_community/${community.id}?isAdmin=true")
+                            },
+                            onEdit = {
+                                navController.navigate("edit_community/${community.id}")
+                            },
                             onDelete = {
                                 communityToDelete = community
                                 showDeleteDialog = true
@@ -97,12 +114,16 @@ fun SuperAdminCommunityList(navController: NavController) {
 @Composable
 fun SuperAdminCommunityItem(
     community: Community,
+    onClick: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column {
             val imageUrl = "${Constants.URL_GAMBAR_BASE}${community.banner_url ?: community.foto_url}"
@@ -146,8 +167,13 @@ fun SuperAdminCommunityItem(
                     }
                 }
 
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus Paksa", tint = Color.Red)
+                Row {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Hapus Paksa", tint = Color.Red)
+                    }
                 }
             }
         }
