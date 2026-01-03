@@ -57,6 +57,8 @@ export const getCommunityById = async(req, res) => {
 
         const result = {
             ...community.toJSON(),
+            logo_community: `${req.protocol}://${req.get("host")}/uploads/${community.logo_community}`,
+            banner_community: `${req.protocol}://${req.get("host")}/uploads/${community.banner_community}`,
             total_anggota: totalMembers,
             total_likes: totalLikes,
             is_joined: isJoined,
