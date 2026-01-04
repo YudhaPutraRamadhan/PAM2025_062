@@ -17,6 +17,10 @@ import java.io.File
 class AdminCommunityViewModel : ViewModel() {
     var myCommunity by mutableStateOf<Community?>(null)
 
+    var otherCommunities by mutableStateOf<List<Community>>(emptyList())
+    var searchQuery by mutableStateOf("")
+    var selectedCategory by mutableStateOf("Semua")
+
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
@@ -27,6 +31,7 @@ class AdminCommunityViewModel : ViewModel() {
                 val response = RetrofitClient.instance.getMyCommunity()
                 if (response.isSuccessful) {
                     myCommunity = response.body()
+                    fetchOtherCommunities()
                 } else {
                     errorMessage = "Gagal memuat data"
                 }
@@ -34,6 +39,29 @@ class AdminCommunityViewModel : ViewModel() {
                 errorMessage = "Error: ${e.message}"
             } finally {
                 isLoading = false
+            }
+        }
+    }
+
+    fun fetchOtherCommunities() {
+        viewModelScope.launch {
+            try {
+                val categoryParam = if (selectedCategory == "Semua") null else selectedCategory
+                val queryParam = if (searchQuery.isBlank()) null else searchQuery
+
+                val response = RetrofitClient.instance.getCommunities(queryParam, categoryParam)
+
+                if (response.isSuccessful) {
+                    val allCommunities = response.body() ?: emptyList()
+
+                    otherCommunities = if (myCommunity != null) {
+                        allCommunities.filter { it.id != myCommunity!!.id }
+                    } else {
+                        allCommunities
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -104,6 +132,7 @@ class AdminCommunityViewModel : ViewModel() {
                 val response = RetrofitClient.instance.deleteCommunity(id)
                 if (response.isSuccessful) {
                     myCommunity = null
+                    fetchOtherCommunities()
                 } else {
                     errorMessage = "Gagal menghapus"
                 }

@@ -21,6 +21,9 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.hobbyyk_new.data.datastore.UserStore
 import com.example.hobbyyk_new.utils.Constants
 import com.example.hobbyyk_new.viewmodel.CommunityDetailViewModel
 
@@ -45,6 +49,9 @@ fun CommunityDetailScreen(
 ) {
     val viewModel: CommunityDetailViewModel = viewModel()
     val context = LocalContext.current
+
+    val userStore = remember { UserStore(context) }
+    val userRole by userStore.userRole.collectAsState(initial = null)
 
     LaunchedEffect(communityId) {
         viewModel.getDetail(communityId)
@@ -62,7 +69,7 @@ fun CommunityDetailScreen(
             )
         },
         bottomBar = {
-            if (!isAdminPreview && viewModel.community != null) {
+            if (!isAdminPreview && viewModel.community != null && userRole == "user") {
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
@@ -141,7 +148,7 @@ fun CommunityDetailScreen(
                                 modifier = Modifier
                                     .size(80.dp)
                                     .clip(CircleShape)
-                                    .background(Color.LightGray)
+                                    .background(Color.Transparent)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
 

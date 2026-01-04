@@ -4,13 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
@@ -31,21 +35,23 @@ import coil.request.ImageRequest
 import com.example.hobbyyk_new.utils.Constants
 import com.example.hobbyyk_new.viewmodel.AdminCommunityViewModel
 import kotlinx.coroutines.launch
-import com.example.hobbyyk_new.data.datastore.UserStore
 import com.example.hobbyyk_new.data.model.Community
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboard(navController: NavController) {
     val viewModel: AdminCommunityViewModel = viewModel()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-
-    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchMyCommunity()
     }
+
+    LaunchedEffect(viewModel.searchQuery, viewModel.selectedCategory, viewModel.myCommunity) {
+        viewModel.fetchOtherCommunities()
+    }
+
+    val categories = listOf("Semua") + Constants.COMMUNITY_CATEGORIES
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -89,26 +95,22 @@ fun AdminDashboard(navController: NavController) {
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues).fillMaxSize().padding(16.dp)
+            modifier = Modifier.padding(paddingValues).fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text("Area Manajer", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                Text("Area Manajer", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
 
             item {
-                // Perbaikan parameter navigasi agar sinkron dengan AppNavigation
                 MyCommunityCard(
                     community = viewModel.myCommunity,
                     isLoading = viewModel.isLoading,
                     onCreateClick = { navController.navigate("create_community") },
                     onEditClick = { id -> navController.navigate("edit_community/$id") },
-                    onDetailClick = { id ->
-                        navController.navigate("admin_community_detail/$id")
-                    },
+                    onDetailClick = { id -> navController.navigate("admin_community_detail/$id") },
                     onDeleteClick = { showDeleteDialog = true }
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
             if (viewModel.myCommunity != null && !viewModel.isLoading) {
@@ -118,17 +120,141 @@ fun AdminDashboard(navController: NavController) {
                             navController.navigate("activity_list/${viewModel.myCommunity!!.id}")
                         }
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
                     HorizontalDivider()
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
             item {
                 Text("Jelajahi Komunitas Lain", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                Text("Fitur jelajah akan tampil di sini...", color = Color.Gray, fontSize = 14.sp)
+                Text(
+                    "Lihat apa yang dilakukan komunitas lain.",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                OutlinedTextField(
+                    value = viewModel.searchQuery,
+                    onValueChange = { viewModel.searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Cari nama komunitas...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (viewModel.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.searchQuery = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = null)
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
+                )
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(categories) { category ->
+                        FilterChip(
+                            selected = viewModel.selectedCategory == category,
+                            onClick = { viewModel.selectedCategory = category },
+                            label = { Text(category) },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
+            }
+
+            if (viewModel.otherCommunities.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("Tidak ada komunitas lain ditemukan.", color = Color.Gray)
+                    }
+                }
+            } else {
+                items(viewModel.otherCommunities) { community ->
+                    AdminExploreCommunityItem(
+                        community = community,
+                        onClick = {
+                            navController.navigate("community_detail/${community.id}")
+                        }
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AdminExploreCommunityItem(
+    community: Community,
+    onClick: () -> Unit
+) {
+    Card(
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Column {
+            val imageFilename = community.banner_url ?: community.foto_url
+            val imageUrl = "${Constants.URL_GAMBAR_BASE}$imageFilename"
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Banner",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            )
+
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = community.nama_komunitas,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        text = community.kategori,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = "📍 ${community.lokasi}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
             }
         }
     }
@@ -227,7 +353,7 @@ fun MyCommunityCard(
                             model = ImageRequest.Builder(LocalContext.current).data(imageUrl).build(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color.LightGray)
+                            modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color.Transparent)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
@@ -268,7 +394,7 @@ fun MyCommunityCard(
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Hapus Komunitas", fontSize = 12.sp)
+                    Text("Hapus", fontSize = 12.sp)
                 }
             }
         }
