@@ -40,7 +40,10 @@ interface ApiService {
         @Part banner: MultipartBody.Part
     ): Response<Void>
     @GET("communities")
-    suspend fun getCommunities(): Response<List<Community>>
+    suspend fun getCommunities(
+        @Query("search") search: String? = null,
+        @Query("category") category: String? = null
+    ): Response<List<Community>>
     @GET("communities/{id}")
     suspend fun getCommunityDetail(@Path("id") id: Int): Response<Community>
     @GET("communities/{id}")
