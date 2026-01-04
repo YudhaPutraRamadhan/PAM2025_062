@@ -22,6 +22,8 @@ import androidx.navigation.NavController
 import com.example.hobbyyk_new.viewmodel.LoginViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 
@@ -49,7 +51,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.White)
     ) {
         Column(
             modifier = Modifier
@@ -58,63 +60,93 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Header with colorful accent
             Text(
                 text = "Selamat Datang!",
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color(0xFFFF6B35),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Silakan masuk untuk melanjutkan petualangan hobimu",
-                fontSize = 14.sp,
+                fontSize = 15.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 8.dp),
+                lineHeight = 20.sp
             )
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            // Email Field with icon
             OutlinedTextField(
                 value = viewModel.email,
                 onValueChange = { viewModel.email = it },
                 label = { Text("Email") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Email,
+                        contentDescription = "Email Icon",
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Password Field with icon
             OutlinedTextField(
                 value = viewModel.password,
                 onValueChange = { viewModel.password = it },
                 label = { Text("Password") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Lock,
+                        contentDescription = "Password Icon",
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = "Toggle Password")
+                        Icon(imageVector = image, contentDescription = "Toggle Password", tint = Color.Gray)
                     }
-                }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
+            // Error Message
             if (viewModel.errorMessage != null) {
                 Text(
                     text = viewModel.errorMessage!!,
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 12.sp,
-                    modifier = Modifier.padding(top = 8.dp).align(Alignment.Start)
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.Start)
                 )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Login Button - Colorful & Bold
             Button(
                 onClick = { viewModel.login() },
                 modifier = Modifier
@@ -122,59 +154,78 @@ fun LoginScreen(
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp)),
                 enabled = !viewModel.isLoading,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35),
+                    disabledContainerColor = Color(0xFFFF6B35).copy(alpha = 0.6f)
+                )
             ) {
                 if (viewModel.isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp
+                    )
                 } else {
-                    Text("Masuk", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Masuk",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Register Link
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text("Belum punya akun? ", color = Color.Gray)
+                Text("Belum punya akun? ", color = Color.Gray, fontSize = 17.sp)
                 Text(
                     text = "Daftar",
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color(0xFFFF6B35),
+                    fontSize = 17.sp,
                     modifier = Modifier.clickable { navController.navigate("register") }
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
+            // Divider
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 40.dp),
                 thickness = 1.dp,
-                color = Color.LightGray.copy(alpha = 0.5f)
+                color = Color.LightGray.copy(alpha = 0.4f)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Request Admin Section - Colorful card
             Surface(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFFFF3E0),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Ingin mendaftarkan komunitas?",
-                        fontSize = 14.sp,
-                        color = Color.DarkGray
+                        fontSize = 16.sp,
+                        color = Color(0xFF616161),
+                        textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Ajukan Sebagai Admin",
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Color(0xFFFF6B35),
                         modifier = Modifier.clickable { navController.navigate("request_admin") }
                     )
                 }

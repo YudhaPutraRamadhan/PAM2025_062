@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,44 +48,58 @@ fun RequestAdminScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Daftar Komunitas", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        "Daftar Komunitas",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFFFF6B35)
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = Color.White
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(24.dp),
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Text(
                 text = "Bangun Komunitasmu",
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
+                color = Color(0xFFFF6B35)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFFFF3E0),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "Sistem akan membuatkan akun Admin otomatis dan mengirimkannya ke email Anda setelah permintaan disetujui.",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(16.dp),
-                    lineHeight = 20.sp
+                    color = Color(0xFF616161),
+                    modifier = Modifier.padding(20.dp),
+                    lineHeight = 22.sp
                 )
             }
 
@@ -94,49 +110,80 @@ fun RequestAdminScreen(navController: NavController) {
                 value = username,
                 onValueChange = { username = it },
                 placeholder = { Text("Masukkan nama untuk identitas admin") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Email Field
             LabelText("Email Aktif")
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = { Text("contoh@email.com") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Email,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
+            // Submit Button
             Button(
                 onClick = { viewModel.submitRequest(username, email) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                enabled = !viewModel.isLoading
+                enabled = !viewModel.isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35),
+                    disabledContainerColor = Color(0xFFFF6B35).copy(alpha = 0.6f)
+                )
             ) {
                 if (viewModel.isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp
+                    )
                 } else {
-                    Text("Kirim Permintaan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Kirim Permintaan",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Proses peninjauan biasanya memakan waktu 1 menit hingga 5 menit",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
         }
     }
 }

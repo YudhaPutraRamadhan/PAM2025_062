@@ -52,15 +52,28 @@ fun VerifyOtpScreen(navController: NavController, email: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Verifikasi Akun", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        "Verifikasi Akun",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFFFF6B35)
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = Color.White
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -70,24 +83,26 @@ fun VerifyOtpScreen(navController: NavController, email: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
+            // Header
             Text(
                 text = "Masukkan Kode OTP",
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFFFF6B35),
                 textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Email Info
             Text(
                 text = buildAnnotatedString {
                     append("Kode verifikasi telah dikirimkan ke\n")
                     withStyle(style = SpanStyle(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color(0xFF212121)
                     )) {
                         append(email)
                     }
@@ -100,6 +115,7 @@ fun VerifyOtpScreen(navController: NavController, email: String) {
 
             Spacer(modifier = Modifier.height(48.dp))
 
+            // OTP Input Field
             OutlinedTextField(
                 value = viewModel.otpCode,
                 onValueChange = {
@@ -120,67 +136,79 @@ fun VerifyOtpScreen(navController: NavController, email: String) {
                     letterSpacing = 12.sp
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    unfocusedContainerColor = Color(0xFFFFF3E0).copy(alpha = 0.3f),
+                    focusedContainerColor = Color(0xFFFFF3E0).copy(alpha = 0.5f),
+                    cursorColor = Color(0xFFFF6B35)
                 )
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(0.5.dp)
+
+            Row(
+                modifier = Modifier.padding(vertical = 16.dp, horizontal = 24.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (viewModel.isTimerRunning) {
-                        Text(
-                            text = "Kirim ulang dalam ",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = "${viewModel.timeLeft}s",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                    } else {
-                        Text(
-                            text = "Belum menerima kode? ",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = "Kirim Ulang",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 14.sp,
-                            modifier = Modifier.clickable { viewModel.resendOtp(email) }
-                        )
-                    }
+                if (viewModel.isTimerRunning) {
+                    Text(
+                        text = "Kirim ulang dalam ",
+                        color = Color(0xFF616161),
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "${viewModel.timeLeft}s",
+                        color = Color(0xFFFF6B35),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                } else {
+                    Text(
+                        text = "Belum menerima kode? ",
+                        color = Color(0xFF616161),
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Kirim Ulang",
+                        color = Color(0xFFFF6B35),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.clickable { viewModel.resendOtp(email) }
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
 
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Verify Button
             Button(
                 onClick = { viewModel.verifyOtp(email) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                enabled = viewModel.otpCode.length >= 4 && !viewModel.isLoading
+                enabled = viewModel.otpCode.length >= 4 && !viewModel.isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35),
+                    disabledContainerColor = Color(0xFFFF6B35).copy(alpha = 0.6f)
+                )
             ) {
                 if (viewModel.isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp
+                    )
                 } else {
-                    Text("Verifikasi Sekarang", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Verifikasi Sekarang",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
         }

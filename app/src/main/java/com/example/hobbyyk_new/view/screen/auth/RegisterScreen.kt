@@ -49,102 +49,188 @@ fun RegisterScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Daftar Akun", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        "Daftar Akun",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFFFF6B35)
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = Color.White
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(24.dp),
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
             horizontalAlignment = Alignment.Start
         ) {
+            // Header Section
             Text(
                 text = "Ayo Bergabung!",
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
+                color = Color(0xFFFF6B35)
             )
             Text(
                 text = "Lengkapi data dirimu untuk mulai mengeksplorasi komunitas di Yogyakarta.",
                 fontSize = 14.sp,
                 color = Color.Gray,
-                modifier = Modifier.padding(top = 4.dp, bottom = 32.dp)
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
             )
 
+            // Username Field
             LabelText("Username")
             OutlinedTextField(
                 value = viewModel.name,
                 onValueChange = { viewModel.name = it },
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Email Field
             LabelText("Email")
             OutlinedTextField(
                 value = viewModel.email,
                 onValueChange = { viewModel.email = it },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Email,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                shape = RoundedCornerShape(16.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Password Field
             LabelText("Password")
             OutlinedTextField(
                 value = viewModel.password,
                 onValueChange = { viewModel.password = it },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(imageVector = image, contentDescription = "Toggle")
+                        Icon(
+                            imageVector = image,
+                            contentDescription = "Toggle",
+                            tint = Color.Gray
+                        )
                     }
-                }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Confirm Password Field
             LabelText("Konfirmasi Password")
             OutlinedTextField(
                 value = viewModel.confPassword,
                 onValueChange = { viewModel.confPassword = it },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                shape = RoundedCornerShape(16.dp),
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35)
+                    )
+                },
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B35),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFFF6B35),
+                    cursorColor = Color(0xFFFF6B35)
+                )
             )
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            // Register Button
             Button(
                 onClick = { viewModel.register() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                enabled = !viewModel.isLoading
+                enabled = !viewModel.isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35),
+                    disabledContainerColor = Color(0xFFFF6B35).copy(alpha = 0.6f)
+                )
             ) {
                 if (viewModel.isLoading && !viewModel.showOtpDialog) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp
+                    )
                 } else {
-                    Text("Daftar Sekarang", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Daftar Sekarang",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
 
@@ -158,8 +244,8 @@ fun LabelText(text: String) {
     Text(
         text = text,
         fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = Color.DarkGray,
-        modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+        fontWeight = FontWeight.SemiBold,
+        color = Color(0xFF424242),
+        modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
     )
 }

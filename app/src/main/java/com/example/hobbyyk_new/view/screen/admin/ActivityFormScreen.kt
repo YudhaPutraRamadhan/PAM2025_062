@@ -6,9 +6,11 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +51,6 @@ fun ActivityFormScreen(navController: NavController, communityId: Int, activityI
     var waktu by remember { mutableStateOf("") }
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    // Logika sinkronisasi data (Tetap utuh)
     LaunchedEffect(activityId) { if (activityId != null && activityId != 0) viewModel.getActivityDetail(activityId) }
     LaunchedEffect(viewModel.selectedActivity) {
         if (activityId != null && activityId != 0) {
@@ -77,82 +80,118 @@ fun ActivityFormScreen(navController: NavController, communityId: Int, activityI
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text(if (activityId != 0) "Edit Kegiatan" else "Kegiatan Baru", fontWeight = FontWeight.SemiBold) },
+                title = { Text(if (activityId != 0) "Edit Kegiatan" else "Kegiatan Baru", fontWeight = FontWeight.Black, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Black)
                     }
                 }
             )
         }
     ) { paddingValues ->
         if (viewModel.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Color(0xFFFF6B35)) }
         } else {
             Column(modifier = Modifier.padding(paddingValues).fillMaxSize().padding(horizontal = 24.dp).verticalScroll(scrollState)) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Dokumentasi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(12.dp))
+                Text("Dokumentasi Kegiatan", fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color(0xFF1A1A1A))
+                Text("Unggah foto keseruan aktivitas Anda (Maks. 2 foto)", fontSize = 13.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(20.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Surface(
                         onClick = { imageLauncher.launch("image/*") },
-                        modifier = Modifier.size(100.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        modifier = Modifier.size(110.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        color = Color(0xFFF8F9FA),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Icon(Icons.Default.AddPhotoAlternate, null, tint = MaterialTheme.colorScheme.primary)
-                            Text("${selectedImages.size}/2", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Default.AddPhotoAlternate, null, tint = Color(0xFFFF6B35), modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.height(4.dp))
+                            Text("${selectedImages.size}/2 Foto", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.Gray)
                         }
                     }
 
                     selectedImages.forEach { uri ->
-                        AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(100.dp).clip(RoundedCornerShape(16.dp)))
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(RoundedCornerShape(24.dp))
+                                .shadow(2.dp)
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 LabelText("Judul Kegiatan")
-                OutlinedTextField(value = judul, onValueChange = { judul = it }, placeholder = { Text("Nama event...") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = judul, onValueChange = { judul = it },
+                    placeholder = { Text("Contoh: Kopdar Rutin Fotografi", color = Color.LightGray) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
+                )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(Modifier.weight(1f)) {
                         LabelText("Tanggal")
+                        Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = tanggal, onValueChange = {}, readOnly = true,
-                            trailingIcon = { IconButton(onClick = { datePickerDialog.show() }) { Icon(Icons.Default.CalendarToday, null, Modifier.size(18.dp)) } },
+                            trailingIcon = { IconButton(onClick = { datePickerDialog.show() }) { Icon(Icons.Default.CalendarToday, null, Modifier.size(18.dp), tint = Color(0xFFFF6B35)) } },
                             modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() },
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
                         )
                     }
                     Column(Modifier.weight(1f)) {
                         LabelText("Waktu")
+                        Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = waktu, onValueChange = {}, readOnly = true,
-                            trailingIcon = { IconButton(onClick = { timePickerDialog.show() }) { Icon(Icons.Default.AccessTime, null, Modifier.size(18.dp)) } },
+                            trailingIcon = { IconButton(onClick = { timePickerDialog.show() }) { Icon(Icons.Default.AccessTime, null, Modifier.size(18.dp), tint = Color(0xFFFF6B35)) } },
                             modifier = Modifier.fillMaxWidth().clickable { timePickerDialog.show() },
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 LabelText("Lokasi")
-                OutlinedTextField(value = lokasi, onValueChange = { lokasi = it }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = lokasi, onValueChange = { lokasi = it },
+                    placeholder = { Text("Lokasi spesifik di Jogja", color = Color.LightGray) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
+                )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                LabelText("Deskripsi")
-                OutlinedTextField(value = deskripsi, onValueChange = { deskripsi = it }, modifier = Modifier.fillMaxWidth(), minLines = 4, shape = RoundedCornerShape(12.dp))
+                LabelText("Deskripsi Kegiatan")
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = deskripsi, onValueChange = { deskripsi = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 5,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
+                )
 
                 Spacer(modifier = Modifier.height(48.dp))
 
@@ -166,11 +205,12 @@ fun ActivityFormScreen(navController: NavController, communityId: Int, activityI
                             }
                         } else { Toast.makeText(context, "Judul dan Tanggal wajib diisi!", Toast.LENGTH_SHORT).show() }
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    modifier = Modifier.fillMaxWidth().height(56.dp).shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFFF6B35)),
                     shape = RoundedCornerShape(16.dp),
-                    enabled = !viewModel.isLoading
+                    enabled = !viewModel.isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35))
                 ) {
-                    Text(if (activityId != 0) "Update Kegiatan" else "Publikasikan", fontWeight = FontWeight.Bold)
+                    Text(if (activityId != 0) "Update Kegiatan" else "Publikasikan Sekarang", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
                 Spacer(modifier = Modifier.height(40.dp))
             }

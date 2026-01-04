@@ -3,9 +3,9 @@ package com.example.hobbyyk_new.view.screen.admin.activity
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,9 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +31,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.example.hobbyyk_new.utils.Constants
 import com.example.hobbyyk_new.viewmodel.ActivityViewModel
 import org.json.JSONArray
@@ -52,14 +52,13 @@ fun ActivityDetailScreen(
         viewModel.getActivityDetail(activityId)
     }
 
-    // Fullscreen Image View (Tetap mempertahankan logika aslimu)
     if (selectedImageForFullscreen != null) {
         Dialog(
             onDismissRequest = { selectedImageForFullscreen = null },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)).clickable { selectedImageForFullscreen = null },
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.95f)).clickable { selectedImageForFullscreen = null },
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
@@ -74,12 +73,13 @@ fun ActivityDetailScreen(
 
     Scaffold(
         modifier = Modifier.blur(blurRadius),
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text("Detail Aktivitas", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Detail Aktivitas", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Black)
                     }
                 }
             )
@@ -87,7 +87,7 @@ fun ActivityDetailScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (viewModel.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFFF6B35))
             } else if (viewModel.selectedActivity != null) {
                 val data = viewModel.selectedActivity!!
                 val images = remember(data.foto_kegiatan) {
@@ -100,13 +100,13 @@ fun ActivityDetailScreen(
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 ) {
-                    // Modern Gallery Grid
+                    // Modern Gallery Grid (Poles Visual)
                     if (images.isNotEmpty()) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().height(220.dp).padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.fillMaxWidth().height(240.dp).padding(24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            images.forEach { imgName ->
+                            images.take(3).forEach { imgName -> // Maksimal 3 gambar untuk grid yang rapi
                                 AsyncImage(
                                     model = "${Constants.URL_GAMBAR_BASE}$imgName",
                                     contentDescription = null,
@@ -114,48 +114,51 @@ fun ActivityDetailScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(Color(0xFFF5F5F5))
+                                        .shadow(4.dp)
                                         .clickable { selectedImageForFullscreen = imgName }
                                 )
                             }
                         }
                     }
 
-                    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                         Text(
                             text = data.judul_kegiatan,
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 32.sp
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF1A1A1A),
+                            lineHeight = 34.sp
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(28.dp))
 
-                        // Info Cards Section
+                        // Info Cards Section (Modernized)
                         Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(16.dp),
+                            color = Color(0xFFFAFAFA),
+                            shape = RoundedCornerShape(24.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                DetailInfoRow(Icons.Default.CalendarToday, "Tanggal", data.tanggal)
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-                                DetailInfoRow(Icons.Default.AccessTime, "Waktu", data.waktu)
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-                                DetailInfoRow(Icons.Default.LocationOn, "Lokasi", data.lokasi)
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                DetailInfoRow(Icons.Default.CalendarToday, "Tanggal", data.tanggal, Color(0xFFFF6B35))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), thickness = 1.dp, color = Color(0xFFF0F0F0))
+                                DetailInfoRow(Icons.Default.AccessTime, "Waktu", data.waktu, Color(0xFF4361EE))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), thickness = 1.dp, color = Color(0xFFF0F0F0))
+                                DetailInfoRow(Icons.Default.LocationOn, "Lokasi", data.lokasi, Color(0xFF2E7D32))
                             }
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        Text("Deskripsi Kegiatan", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Deskripsi Kegiatan", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color(0xFF1A1A1A))
                         Text(
                             text = data.deskripsi,
                             modifier = Modifier.padding(top = 12.dp, bottom = 40.dp),
                             lineHeight = 24.sp,
-                            color = Color.DarkGray
+                            color = Color(0xFF616161),
+                            fontSize = 15.sp
                         )
                     }
                 }
@@ -165,13 +168,18 @@ fun ActivityDetailScreen(
 }
 
 @Composable
-fun DetailInfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+fun DetailInfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String, accentColor: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Box(
+            modifier = Modifier.size(40.dp).background(accentColor.copy(alpha = 0.1f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = accentColor, modifier = Modifier.size(18.dp))
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(label, fontSize = 11.sp, color = Color.Gray)
-            Text(value, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(label, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+            Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
         }
     }
 }

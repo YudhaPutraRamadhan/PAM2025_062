@@ -1,7 +1,6 @@
 package com.example.hobbyyk_new.view.screen.user
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -14,11 +13,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -57,92 +61,153 @@ fun EditProfileScreen(navController: NavController) {
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profil", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Edit Profil", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color(0xFF1A1A1A))
                     }
                 }
             )
         }
     ) { paddingValues ->
         if (viewModel.isLoading && viewModel.userProfile == null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFFFF6B35))
+            }
         } else {
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.clickable { imageLauncher.launch("image/*") }) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context).data(selectedImageUri ?: "${Constants.URL_GAMBAR_BASE}${viewModel.userProfile?.profile_pic}").crossfade(true).build(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    contentAlignment = Alignment.BottomEnd,
+                    modifier = Modifier.clickable { imageLauncher.launch("image/*") }
+                ) {
+                    Box(
                         modifier = Modifier
-                            .size(140.dp)
+                            .size(130.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray)
-                    )
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape,
-                        shadowElevation = 4.dp,
-                        modifier = Modifier.size(40.dp)
+                            .background(Color(0xFFF5F5F5))
                     ) {
-                        Icon(Icons.Default.CameraAlt, null, tint = Color.White, modifier = Modifier.padding(8.dp))
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(selectedImageUri ?: "${Constants.URL_GAMBAR_BASE}${viewModel.userProfile?.profile_pic}")
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                        )
+                    }
+                    Surface(
+                        modifier = Modifier.size(40.dp).shadow(4.dp, CircleShape),
+                        color = Color(0xFFFF6B35),
+                        shape = CircleShape
+                    ) {
+                        Icon(Icons.Default.CameraAlt, null, tint = Color.White, modifier = Modifier.padding(10.dp).size(18.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                LabelText("Username")
-                OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = true
-                )
+                Column(Modifier.fillMaxWidth()) {
+                    LabelText("Username")
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        leadingIcon = { Icon(Icons.Default.Person, null, tint = Color(0xFFFF6B35)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF6B35),
+                            unfocusedBorderColor = Color(0xFFEEEEEE),
+                            focusedLabelColor = Color(0xFFFF6B35),
+                            cursorColor = Color(0xFFFF6B35)
+                        )
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                LabelText("Bio")
-                OutlinedTextField(
-                    value = bio, onValueChange = { bio = it },
-                    placeholder = { Text("Ceritakan sedikit hobi Anda...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    minLines = 3
-                )
+                Column(Modifier.fillMaxWidth()) {
+                    LabelText("Bio")
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = bio,
+                        onValueChange = { bio = it },
+                        placeholder = { Text("Ceritakan sedikit hobi Anda...", color = Color.LightGray) },
+                        leadingIcon = { Icon(Icons.Default.Description, null, tint = Color(0xFFFF6B35)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        minLines = 3,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF6B35),
+                            unfocusedBorderColor = Color(0xFFEEEEEE),
+                            focusedLabelColor = Color(0xFFFF6B35),
+                            cursorColor = Color(0xFFFF6B35)
+                        )
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                LabelText("Nomor HP")
-                OutlinedTextField(
-                    value = noHp, onValueChange = { noHp = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone)
-                )
+                Column(Modifier.fillMaxWidth()) {
+                    LabelText("Nomor HP")
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = noHp,
+                        onValueChange = { noHp = it },
+                        leadingIcon = { Icon(Icons.Default.Phone, null, tint = Color(0xFFFF6B35)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF6B35),
+                            unfocusedBorderColor = Color(0xFFEEEEEE),
+                            focusedLabelColor = Color(0xFFFF6B35),
+                            cursorColor = Color(0xFFFF6B35)
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(48.dp))
 
                 Button(
                     onClick = { viewModel.updateProfile(username, bio, noHp, selectedImageUri, context) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFFF6B35)),
                     shape = RoundedCornerShape(16.dp),
-                    enabled = !viewModel.isLoading
+                    enabled = !viewModel.isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35)),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
-                    if (viewModel.isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Simpan Perubahan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.linearGradient(listOf(Color(0xFFFF6B35), Color(0xFFFF8E5E)))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (viewModel.isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("Simpan Perubahan", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }

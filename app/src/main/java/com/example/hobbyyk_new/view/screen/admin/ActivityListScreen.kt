@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +52,8 @@ fun ActivityListScreen(navController: NavController, communityId: Int) {
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Aktivitas?", fontWeight = FontWeight.Bold) },
+            shape = RoundedCornerShape(28.dp),
+            title = { Text("Hapus Aktivitas?", fontWeight = FontWeight.Black) },
             text = { Text("Tindakan ini permanen. Jadwal dan foto kegiatan akan dihapus dari sistem.") },
             confirmButton = {
                 Button(
@@ -58,45 +61,58 @@ fun ActivityListScreen(navController: NavController, communityId: Int) {
                         activityToDeleteId?.let { id -> viewModel.deleteActivity(id, communityId) }
                         showDeleteDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) { Text("Hapus") }
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                    shape = RoundedCornerShape(12.dp)
+                ) { Text("Ya, Hapus", fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Batal") }
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Batal", color = Color.Gray, fontWeight = FontWeight.Bold)
+                }
             }
         )
     }
 
     Scaffold(
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
             TopAppBar(
-                title = { Text("Kelola Aktivitas", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Kelola Aktivitas", fontWeight = FontWeight.Black, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Black)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("activity_form/$communityId/0") },
-                containerColor = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(16.dp)
+                containerColor = Color(0xFFFF6B35),
+                shape = RoundedCornerShape(18.dp),
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Default.Add, "Tambah", tint = Color.White)
+                Icon(Icons.Default.Add, "Tambah", tint = Color.White, modifier = Modifier.size(28.dp))
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (viewModel.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFFF6B35))
             } else if (viewModel.activityList.isEmpty()) {
-                Text("Belum ada jadwal kegiatan.", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.Event, null, modifier = Modifier.size(64.dp), tint = Color(0xFFE0E0E0))
+                    Spacer(Modifier.height(12.dp))
+                    Text("Belum ada jadwal kegiatan.", color = Color.Gray, fontWeight = FontWeight.Medium)
+                }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     items(viewModel.activityList) { activity ->
                         ActivityItemCard(
@@ -117,11 +133,12 @@ fun ActivityListScreen(navController: NavController, communityId: Int) {
 
 @Composable
 fun ActivityItemCard(activity: Activity, onDelete: () -> Unit, onEdit: () -> Unit, onDetail: () -> Unit) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(1.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
+        shadowElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,48 +154,81 @@ fun ActivityItemCard(activity: Activity, onDelete: () -> Unit, onEdit: () -> Uni
                         model = "${Constants.URL_GAMBAR_BASE}$firstImage",
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(70.dp).clip(RoundedCornerShape(12.dp))
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFF5F5F5))
                     )
                 } else {
-                    Surface(Modifier.size(70.dp), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primaryContainer) {
-                        Icon(Icons.Default.Event, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(20.dp))
+                    Box(
+                        Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFFF6B35).copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Event, null, tint = Color(0xFFFF6B35), modifier = Modifier.size(24.dp))
                     }
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(activity.judul_kegiatan, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text("${activity.tanggal}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
-                    Text(activity.lokasi, fontSize = 12.sp, color = Color.Gray, maxLines = 1)
+                    Text(
+                        activity.judul_kegiatan,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 17.sp,
+                        color = Color(0xFF1A1A1A),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = activity.tanggal,
+                        fontSize = 12.sp,
+                        color = Color(0xFFFF6B35),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                    Text(
+                        activity.lokasi,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
 
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, null, tint = Color.Red.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.background(Color(0xFFFFEBEE), CircleShape).size(32.dp)
+                ) {
+                    Icon(Icons.Default.Delete, null, tint = Color(0xFFE53935), modifier = Modifier.size(16.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
                     onClick = onEdit,
-                    modifier = Modifier.weight(1f).height(44.dp),
-                    shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFEEEEEE))
                 ) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp), tint = Color(0xFF424242))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Edit", fontSize = 13.sp)
+                    Text("Edit", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF424242))
                 }
 
                 Button(
                     onClick = onDetail,
-                    modifier = Modifier.weight(1f).height(44.dp),
-                    shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4361EE))
                 ) {
-                    Icon(Icons.Default.Visibility, null, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Visibility, null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Lihat", fontSize = 13.sp)
+                    Text("Pratinjau", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

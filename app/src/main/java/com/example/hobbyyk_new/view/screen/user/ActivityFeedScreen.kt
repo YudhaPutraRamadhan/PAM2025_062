@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -44,31 +44,33 @@ fun ActivityFeedScreen(navController: NavController) {
     }
 
     Scaffold(
+        containerColor = Color(0xFFFAFAFA),
         topBar = {
             TopAppBar(
-                title = { Text("Aktivitas Terbaru", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Aktivitas Terbaru", fontWeight = FontWeight.Black, fontSize = 22.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (viewModel.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFFF6B35))
             } else if (viewModel.feedList.isEmpty()) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Belum ada aktivitas baru.", color = Color.Gray)
+                    Text("Belum ada aktivitas baru.", color = Color.Gray, fontWeight = FontWeight.Medium)
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                    contentPadding = PaddingValues(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     items(viewModel.feedList) { activity ->
                         FeedItemCard(
@@ -91,15 +93,15 @@ fun FeedItemCard(
     onClick: () -> Unit,
     onCommunityClick: (Int) -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(20.dp)
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF0F0F0)),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column {
+            // Header: Info Komunitas
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,9 +121,9 @@ fun FeedItemCard(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .background(Color(0xFFF5F5F5))
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -131,7 +133,7 @@ fun FeedItemCard(
                             text = activity.community?.nama_komunitas ?: "HobbyYK Community",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color(0xFF1A1A1A)
                         )
                         Text(
                             text = activity.tanggal,
@@ -142,6 +144,7 @@ fun FeedItemCard(
                 }
             }
 
+            // Image Content
             val firstImage = remember(activity.foto_kegiatan) {
                 try {
                     val jsonArray = JSONArray(activity.foto_kegiatan)
@@ -158,12 +161,13 @@ fun FeedItemCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .height(220.dp)
+                        .padding(horizontal = 12.dp)
+                        .clip(RoundedCornerShape(18.dp))
                 )
             }
 
+            // Bottom Content
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = activity.judul_kegiatan,
@@ -171,15 +175,26 @@ fun FeedItemCard(
                     fontSize = 18.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = Color(0xFF1A1A1A),
+                    lineHeight = 22.sp
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color(0xFFFF6B35),
+                        modifier = Modifier.size(14.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(activity.lokasi, fontSize = 12.sp, color = Color.Gray)
+                    Text(
+                        text = activity.lokasi,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }

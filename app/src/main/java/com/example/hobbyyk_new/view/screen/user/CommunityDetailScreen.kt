@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -55,50 +57,61 @@ fun CommunityDetailScreen(
     LaunchedEffect(communityId) { viewModel.getDetail(communityId) }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text("Detail", fontWeight = FontWeight.SemiBold) },
+                title = { Text("Detail Komunitas", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.Black)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         bottomBar = {
             if (!isAdminPreview && viewModel.community != null && userRole == "user") {
                 Surface(
-                    tonalElevation = 12.dp,
-                    shadowElevation = 12.dp,
-                    color = MaterialTheme.colorScheme.surface
+                    color = Color.White,
+                    modifier = Modifier.shadow(24.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp).fillMaxWidth().navigationBarsPadding(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedButton(
+                        // Like Button (Colorful)
+                        Surface(
                             onClick = { viewModel.toggleLike(communityId) },
-                            modifier = Modifier.weight(0.4f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, if (viewModel.isLiked) Color.Red else Color.LightGray)
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (viewModel.isLiked) Color(0xFFFFEBEE) else Color(0xFFF5F5F5),
+                            modifier = Modifier.size(56.dp)
                         ) {
-                            Icon(
-                                imageVector = if (viewModel.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = null,
-                                tint = if (viewModel.isLiked) Color.Red else Color.Gray,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (viewModel.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = null,
+                                    tint = if (viewModel.isLiked) Color(0xFFE53935) else Color.Gray,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
 
+                        // Join Button (Modern Bold)
                         Button(
                             onClick = { viewModel.toggleJoin(communityId) },
-                            modifier = Modifier.weight(0.6f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f).height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (viewModel.isJoined) Color.Red else MaterialTheme.colorScheme.primary
-                            )
+                                containerColor = if (viewModel.isJoined) Color(0xFFE53935) else Color(0xFFFF6B35)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                         ) {
-                            Text(if (viewModel.isJoined) "Keluar Komunitas" else "Gabung Sekarang", fontWeight = FontWeight.Bold)
+                            Text(
+                                if (viewModel.isJoined) "Keluar Komunitas" else "Gabung Sekarang",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
@@ -107,53 +120,73 @@ fun CommunityDetailScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (viewModel.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFFF6B35))
             } else if (viewModel.community != null) {
                 val data = viewModel.community!!
                 Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                    Box(modifier = Modifier.height(240.dp).fillMaxWidth()) {
+
+                    // Header Image Section
+                    Box(modifier = Modifier.height(260.dp).fillMaxWidth()) {
                         AsyncImage(
                             model = "${Constants.URL_GAMBAR_BASE}${data.banner_url ?: data.foto_url}",
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.height(180.dp).fillMaxWidth()
+                            modifier = Modifier.height(200.dp).fillMaxWidth()
                         )
-                        AsyncImage(
-                            model = "${Constants.URL_GAMBAR_BASE}${data.foto_url}",
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                        // Gradient Overlay for visibility
+                        Box(modifier = Modifier.height(200.dp).fillMaxWidth().background(
+                            Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f)))
+                        ))
+
+                        // Overlapping Profile Picture
+                        Box(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .padding(start = 24.dp)
-                                .size(90.dp)
+                                .padding(start = 24.dp, bottom = 10.dp)
+                                .size(100.dp)
+                                .shadow(8.dp, CircleShape)
                                 .clip(CircleShape)
                                 .background(Color.White)
                                 .padding(4.dp)
                                 .clip(CircleShape)
-                        )
+                        ) {
+                            AsyncImage(
+                                model = "${Constants.URL_GAMBAR_BASE}${data.foto_url}",
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
 
-                    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-                        Text(text = data.nama_komunitas, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Text(
+                            text = data.nama_komunitas,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF1A1A1A),
+                            lineHeight = 34.sp
+                        )
 
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                            BadgeItem(Icons.Default.LocationOn, data.lokasi)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            BadgeItem(Icons.Default.Group, "${viewModel.memberCount} Anggota")
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 12.dp)) {
+                            BadgeItem(Icons.Default.LocationOn, data.lokasi, Color(0xFFFF6B35))
+                            Spacer(modifier = Modifier.width(16.dp))
+                            BadgeItem(Icons.Default.Group, "${viewModel.memberCount} Anggota", Color(0xFF4361EE))
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), thickness = 1.dp, color = Color(0xFFF5F5F5))
 
-                        Text("Tentang Komunitas", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Tentang Komunitas", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color(0xFF1A1A1A))
                         Text(
                             text = data.deskripsi,
                             modifier = Modifier.padding(top = 8.dp),
-                            color = Color.DarkGray,
-                            lineHeight = 24.sp
+                            color = Color(0xFF616161),
+                            lineHeight = 24.sp,
+                            fontSize = 15.sp
                         )
 
                         if (data.link_grup.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(32.dp))
                             Button(
                                 onClick = {
                                     val url = data.link_grup
@@ -163,27 +196,37 @@ fun CommunityDetailScreen(
                                         Toast.makeText(context, "Link tidak valid", Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth().height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                shape = RoundedCornerShape(18.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                             ) {
-                                Text("Grup WhatsApp Komunitas", fontWeight = FontWeight.Bold)
+                                Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text("Gabung Grup WhatsApp", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
-                        Text("Hubungi Admin", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Card(
+                        Text("Hubungi Admin", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color(0xFF1A1A1A))
+
+                        Surface(
                             modifier = Modifier.padding(top = 12.dp, bottom = 40.dp).fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color(0xFFF8F9FA),
+                            border = BorderStroke(1.dp, Color(0xFFEEEEEE))
                         ) {
-                            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Phone, null, tint = MaterialTheme.colorScheme.primary)
+                            Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier.size(44.dp).background(Color(0xFFFF6B35).copy(alpha = 0.1f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Phone, null, tint = Color(0xFFFF6B35), modifier = Modifier.size(20.dp))
+                                }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column {
-                                    Text("WhatsApp / Telepon", fontSize = 12.sp, color = Color.Gray)
-                                    Text(data.kontak, fontWeight = FontWeight.Bold)
+                                    Text("WhatsApp / Telepon", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                                    Text(data.kontak, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1A1A1A))
                                 }
                             }
                         }
@@ -195,10 +238,10 @@ fun CommunityDetailScreen(
 }
 
 @Composable
-fun BadgeItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = Color.Gray, modifier = Modifier.size(14.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(label, fontSize = 12.sp, color = Color.Gray)
+fun BadgeItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(color.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 10.dp, vertical = 6.dp)) {
+        Icon(icon, null, tint = color, modifier = Modifier.size(14.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(label, fontSize = 12.sp, color = color, fontWeight = FontWeight.Bold)
     }
 }
