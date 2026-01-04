@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.hobbyyk_new.utils.Constants
 import com.example.hobbyyk_new.utils.uriToFile
 import com.example.hobbyyk_new.viewmodel.AdminCommunityViewModel
 
@@ -47,6 +48,8 @@ fun CreateCommunityScreen(navController: NavController) {
 
     var logoUri by remember { mutableStateOf<Uri?>(null) }
     var bannerUri by remember { mutableStateOf<Uri?>(null) }
+
+    var expanded by remember { mutableStateOf(false) }
 
     val logoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { logoUri = it }
     val bannerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { bannerUri = it }
@@ -150,11 +153,41 @@ fun CreateCommunityScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = kategori, onValueChange = { kategori = it },
-                label = { Text("Kategori (Contoh: Olahraga, Musik)") },
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = kategori,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Kategori Komunitas") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    Constants.COMMUNITY_CATEGORIES.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                kategori = selectionOption
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
