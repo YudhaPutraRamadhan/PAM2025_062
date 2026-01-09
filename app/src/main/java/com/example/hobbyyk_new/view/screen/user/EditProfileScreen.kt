@@ -1,6 +1,7 @@
 package com.example.hobbyyk_new.view.screen.user
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,12 +44,18 @@ import com.example.hobbyyk_new.viewmodel.ProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavController) {
-    val viewModel: ProfileViewModel = viewModel()
     val context = LocalContext.current
+    val viewModel: ProfileViewModel = viewModel(
+        viewModelStoreOwner = context as androidx.lifecycle.ViewModelStoreOwner
+    )
     var username by remember { mutableStateOf ("") }
     var bio by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val isBioValid = bio.length <= 150
+    val isPhoneValid = noHp.isEmpty() || (noHp.all { it.isDigit() } && noHp.length in 10..13)
+    val isFormEnabled = isBioValid && isPhoneValid && !viewModel.isLoading
 
     LaunchedEffect(Unit) { viewModel.fetchProfile() }
     LaunchedEffect(viewModel.userProfile) {
@@ -53,6 +63,16 @@ fun EditProfileScreen(navController: NavController) {
             if (username.isEmpty()) username = it.username
             if (bio.isEmpty()) bio = it.bio ?: ""
             if (noHp.isEmpty()) noHp = it.no_hp ?: ""
+        }
+    }
+
+    LaunchedEffect(viewModel.message) {
+        viewModel.message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            if (it == "Profil berhasil diperbarui!") {
+                navController.popBackStack()
+            }
+            viewModel.clearMessage()
         }
     }
 
@@ -146,12 +166,13 @@ fun EditProfileScreen(navController: NavController) {
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = bio,
-                        onValueChange = { bio = it },
-                        placeholder = { Text("Ceritakan sedikit hobi Anda...", color = Color.LightGray) },
+                        onValueChange = { if (it.length <= 150) bio = it },
+                        placeholder = { Text("Ceritakan sedikit tentang Anda...", color = Color.LightGray) },
                         leadingIcon = { Icon(Icons.Default.Description, null, tint = Color(0xFFFF6B35)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         minLines = 3,
+                        supportingText = { Text("${bio.length}/150", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth()) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFF6B35),
                             unfocusedBorderColor = Color(0xFFEEEEEE),
@@ -168,12 +189,14 @@ fun EditProfileScreen(navController: NavController) {
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = noHp,
-                        onValueChange = { noHp = it },
+                        onValueChange = { if (it.all { char -> char.isDigit() }) noHp = it },
                         leadingIcon = { Icon(Icons.Default.Phone, null, tint = Color(0xFFFF6B35)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                        isError = !isPhoneValid,
+                        supportingText = { if(!isPhoneValid) Text("Gunakan 10-13 digit angka") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFF6B35),

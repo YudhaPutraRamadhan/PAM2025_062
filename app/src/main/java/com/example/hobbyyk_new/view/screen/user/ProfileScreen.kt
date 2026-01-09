@@ -1,5 +1,6 @@
 package com.example.hobbyyk_new.view.screen.user
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -50,7 +51,31 @@ fun ProfileScreen(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     var showEmailDialog by remember { mutableStateOf(false) }
+    var showPasswordConfirmDialog by remember { mutableStateOf(false) } // State baru untuk Dialog Password
     var tempNewEmail by remember { mutableStateOf("") }
+
+    // --- LOGIKA NAVIGASI OTOMATIS ---
+    LaunchedEffect(viewModel.navigateToVerifyPass) {
+        if (viewModel.navigateToVerifyPass) {
+            navController.navigate("verify_change_pass")
+            viewModel.navigateToVerifyPass = false // Reset state agar tidak loop
+        }
+    }
+
+    LaunchedEffect(viewModel.navigateToVerifyEmail) {
+        viewModel.navigateToVerifyEmail?.let { email ->
+            navController.navigate("verify_change_email/$email")
+            viewModel.navigateToVerifyEmail = null // Reset state
+        }
+    }
+
+    // Handle Toast Message
+    LaunchedEffect(viewModel.message) {
+        viewModel.message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessage()
+        }
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -87,6 +112,7 @@ fun ProfileScreen(navController: NavController) {
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // ... (Bagian Foto Profil & Username tetap sama)
                 Box(contentAlignment = Alignment.Center) {
                     Box(
                         modifier = Modifier
@@ -130,7 +156,7 @@ fun ProfileScreen(navController: NavController) {
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = Color(0xFFFF6B35)), // Shadow dipindah ke sini
+                            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = Color(0xFFFF6B35)),
                         shape = RoundedCornerShape(20.dp),
                         color = Color(0xFFFF6B35)
                     ) {
@@ -171,9 +197,18 @@ fun ProfileScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                SecurityButton(title = "Ganti Password", icon = Icons.Default.Lock, onClick = { viewModel.requestOtpPassword() })
+                // GANTI PASSWORD SEKARANG MEMBUKA DIALOG KONFIRMASI
+                SecurityButton(
+                    title = "Ganti Password",
+                    icon = Icons.Default.Lock,
+                    onClick = { showPasswordConfirmDialog = true }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                SecurityButton(title = "Ganti Email", icon = Icons.Default.Email, onClick = { showEmailDialog = true })
+                SecurityButton(
+                    title = "Ganti Email",
+                    icon = Icons.Default.Email,
+                    onClick = { showEmailDialog = true }
+                )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
@@ -199,28 +234,62 @@ fun ProfileScreen(navController: NavController) {
                 shape = RoundedCornerShape(28.dp),
                 title = { Text("Ganti Email", fontWeight = FontWeight.Bold) },
                 text = {
-                    OutlinedTextField(
-                        value = tempNewEmail,
-                        onValueChange = { tempNewEmail = it },
-                        label = { Text("Email Baru") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFFF6B35),
-                            unfocusedBorderColor = Color(0xFFEEEEEE),
-                            focusedLabelColor = Color(0xFFFF6B35)
+                    Column {
+                        Text("Masukkan email baru Anda. Kami akan mengirimkan kode OTP untuk verifikasi.", fontSize = 14.sp, color = Color.Gray)
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = tempNewEmail,
+                            onValueChange = { tempNewEmail = it },
+                            label = { Text("Email Baru") },
+                            placeholder = { Text("contoh@email.com") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFFF6B35),
+                                unfocusedBorderColor = Color(0xFFCCCCCC),
+                                focusedLabelColor = Color(0xFFFF6B35),
+                                cursorColor = Color(0xFFFF6B35)
+                            )
                         )
-                    )
+                    }
                 },
                 confirmButton = {
                     Button(
                         onClick = { if (tempNewEmail.isNotEmpty()) { viewModel.requestOtpEmail(tempNewEmail); showEmailDialog = false } },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) { Text("Kirim OTP") }
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !viewModel.isLoading
+                    ) {
+                        if (viewModel.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                        else Text("Kirim OTP")
+                    }
                 },
                 dismissButton = {
                     TextButton(onClick = { showEmailDialog = false }) { Text("Batal", color = Color.Gray) }
+                }
+            )
+        }
+
+        if (showPasswordConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showPasswordConfirmDialog = false },
+                shape = RoundedCornerShape(28.dp),
+                icon = { Icon(Icons.Default.Lock, null, tint = Color(0xFFFF6B35)) },
+                title = { Text("Ubah Password?", fontWeight = FontWeight.Bold) },
+                text = { Text("Sistem akan mengirimkan kode OTP ke email Anda untuk melanjutkan proses perubahan password.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.requestOtpPassword()
+                            showPasswordConfirmDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) { Text("Ya, Kirim OTP") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPasswordConfirmDialog = false }) { Text("Batal", color = Color.Gray) }
                 }
             )
         }

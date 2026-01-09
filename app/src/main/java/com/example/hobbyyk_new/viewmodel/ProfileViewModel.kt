@@ -16,6 +16,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.net.SocketTimeoutException
 
 class ProfileViewModel : ViewModel() {
     var userProfile by mutableStateOf<User?>(null)
@@ -59,11 +61,18 @@ class ProfileViewModel : ViewModel() {
                 } else null
 
                 val response = RetrofitClient.instance.updateProfile(usernamePart, bioPart, hpPart, imagePart)
+
                 if (response.isSuccessful) {
                     message = "Profil berhasil diperbarui!"
                     fetchProfile()
                 } else {
-                    message = "Gagal: ${response.message()}"
+                    val errorJson = response.errorBody()?.string()
+                    val errorMsg = try {
+                        JSONObject(errorJson!!).getString("msg")
+                    } catch (e: Exception) {
+                        "Gagal memperbarui profil"
+                    }
+                    message = errorMsg
                 }
             } catch (e: Exception) {
                 message = "Error: ${e.message}"
@@ -82,10 +91,18 @@ class ProfileViewModel : ViewModel() {
                     message = "OTP dikirim ke email Anda"
                     navigateToVerifyPass = true
                 } else {
-                    message = "Gagal kirim OTP"
+                    val errorBody = res.errorBody()?.string()
+                    message = try {
+                        JSONObject(errorBody!!).optString("msg", "Gagal mengirim OTP")
+                    } catch (e: Exception) { "Gagal kirim OTP" }
                 }
-            } catch (e: Exception) { message = "Error: ${e.message}" }
-            finally { isLoading = false }
+            } catch (e: SocketTimeoutException) {
+                message = "Waktu habis (Timeout). Cek email Anda atau coba lagi."
+            } catch (e: Exception) {
+                message = "Terjadi kesalahan jaringan"
+            } finally {
+                isLoading = false
+            }
         }
     }
 
