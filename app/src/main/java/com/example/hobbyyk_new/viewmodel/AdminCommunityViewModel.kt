@@ -15,6 +15,8 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import org.json.JSONObject
+import java.net.SocketTimeoutException
 
 class AdminCommunityViewModel (private val userStore: UserStore) : ViewModel() {
     var myCommunity by mutableStateOf<Community?>(null)
@@ -116,7 +118,7 @@ class AdminCommunityViewModel (private val userStore: UserStore) : ViewModel() {
     fun createCommunity(
         nama: String, lokasi: String, deskripsi: String,
         kategori: String, kontak: String, linkGrup: String,
-        logoFile: File, bannerFile: File
+        logoFile: File, bannerFile: File?
     ) {
         viewModelScope.launch {
             isLoading = true
@@ -131,9 +133,12 @@ class AdminCommunityViewModel (private val userStore: UserStore) : ViewModel() {
                 val requestLogo = logoFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val logoMultipart = MultipartBody.Part.createFormData("file", logoFile.name, requestLogo)
 
-                val requestBanner = bannerFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                val bannerName = "banner_${System.currentTimeMillis()}.jpg"
-                val bannerMultipart = MultipartBody.Part.createFormData("banner", bannerName, requestBanner)
+                var bannerMultipart: MultipartBody.Part? = null
+                if (bannerFile != null) {
+                    val requestBanner = bannerFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val bannerName = "banner_${System.currentTimeMillis()}.jpg"
+                    bannerMultipart = MultipartBody.Part.createFormData("banner", bannerName, requestBanner)
+                }
 
                 val response = RetrofitClient.instance.createCommunity(
                     namaPart, lokasiPart, deskripsiPart,
@@ -142,10 +147,18 @@ class AdminCommunityViewModel (private val userStore: UserStore) : ViewModel() {
                 )
 
                 if (response.isSuccessful) {
+                    errorMessage = "Komunitas Berhasil Dibuat"
                     fetchMyCommunity()
                 } else {
-                    errorMessage = "Gagal membuat: ${response.message()}"
+                    val errorJson = response.errorBody()?.string()
+                    errorMessage = try {
+                        JSONObject(errorJson!!).optString("msg", "Gagal membuat komunitas")
+                    } catch (e: Exception) {
+                        "Gagal membuat: ${response.message()}"
+                    }
                 }
+            } catch (e: SocketTimeoutException) {
+                errorMessage = "Waktu habis. Server sedang sibuk, silakan coba lagi."
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
             } finally {
@@ -209,9 +222,17 @@ class AdminCommunityViewModel (private val userStore: UserStore) : ViewModel() {
 
                 if (response.isSuccessful) {
                     fetchCommunityById(id)
+                    errorMessage = "Update Berhasil!"
                 } else {
-                    errorMessage = "Gagal update: ${response.message()}"
+                    val errorJson = response.errorBody()?.string()
+                    errorMessage = try {
+                        JSONObject(errorJson!!).optString("msg", "Gagal update komunitas")
+                    } catch (e: Exception) {
+                        "Gagal update: ${response.message()}"
+                    }
                 }
+            } catch (e: SocketTimeoutException) {
+                errorMessage = "Waktu habis, server tidak merespon. Cek koneksi Anda."
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
             } finally {

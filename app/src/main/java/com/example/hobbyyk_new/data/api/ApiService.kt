@@ -37,7 +37,7 @@ interface ApiService {
         @Part("kontak") kontak: RequestBody,
         @Part("link_grup") linkGrup: RequestBody,
         @Part file: MultipartBody.Part,
-        @Part banner: MultipartBody.Part
+        @Part banner: MultipartBody.Part?
     ): Response<Void>
     @GET("communities")
     suspend fun getCommunities(

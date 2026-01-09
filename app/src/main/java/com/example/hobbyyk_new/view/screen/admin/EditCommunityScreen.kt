@@ -28,10 +28,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.hobbyyk_new.data.datastore.UserStore
 import com.example.hobbyyk_new.utils.Constants
 import com.example.hobbyyk_new.utils.uriToFile
 import com.example.hobbyyk_new.view.screen.auth.LabelText
@@ -40,8 +43,15 @@ import com.example.hobbyyk_new.viewmodel.AdminCommunityViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditCommunityScreen(navController: NavController, communityId: Int) {
-    val viewModel: AdminCommunityViewModel = viewModel()
     val context = LocalContext.current
+    val userStore = remember { UserStore(context) }
+
+    val factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return AdminCommunityViewModel(userStore) as T
+        }
+    }
+    val viewModel: AdminCommunityViewModel = viewModel(factory = factory)
     val scrollState = rememberScrollState()
 
     LaunchedEffect(communityId) { viewModel.fetchCommunityById(communityId) }
@@ -56,6 +66,17 @@ fun EditCommunityScreen(navController: NavController, communityId: Int) {
     var newLogoUri by remember { mutableStateOf<Uri?>(null) }
     var newBannerUri by remember { mutableStateOf<Uri?>(null) }
     var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel.errorMessage) {
+        viewModel.errorMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+
+            if (msg.contains("berhasil", ignoreCase = true) || msg.contains("sukses", ignoreCase = true)) {
+                navController.popBackStack()
+            }
+            viewModel.errorMessage = null
+        }
+    }
 
     LaunchedEffect(viewModel.myCommunity) {
         viewModel.myCommunity?.let {
@@ -106,12 +127,33 @@ fun EditCommunityScreen(navController: NavController, communityId: Int) {
                             contentAlignment = Alignment.BottomEnd,
                             modifier = Modifier.size(110.dp).clickable { logoLauncher.launch("image/*") }
                         ) {
-                            Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)).background(Color(0xFFF5F5F5))) {
+                            Box(modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(Color(0xFFF5F5F5))) {
                                 val model = newLogoUri ?: "${Constants.URL_GAMBAR_BASE}${viewModel.myCommunity?.foto_url}"
-                                AsyncImage(model = ImageRequest.Builder(context).data(model).crossfade(true).build(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                AsyncImage(model = ImageRequest
+                                    .Builder(context)
+                                    .data(model)
+                                    .crossfade(true)
+                                    .build(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
-                            Surface(modifier = Modifier.size(32.dp).offset(x = 4.dp, y = 4.dp), shape = CircleShape, color = Color(0xFFFF6B35), shadowElevation = 4.dp) {
-                                Icon(Icons.Default.CameraAlt, null, tint = Color.White, modifier = Modifier.padding(6.dp))
+                            Surface(modifier = Modifier
+                                .size(32.dp)
+                                .offset(x = 4.dp, y = 4.dp),
+                                shape = CircleShape,
+                                color = Color(0xFFFF6B35),
+                                shadowElevation = 4.dp) {
+                                Icon(Icons.Default
+                                    .CameraAlt,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.padding(6.dp)
+                                )
                             }
                         }
                     }
@@ -124,10 +166,27 @@ fun EditCommunityScreen(navController: NavController, communityId: Int) {
                         ) {
                             Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)).background(Color(0xFFF5F5F5))) {
                                 val bannerModel = newBannerUri ?: "${Constants.URL_GAMBAR_BASE}${viewModel.myCommunity?.banner_url ?: viewModel.myCommunity?.foto_url}"
-                                AsyncImage(model = ImageRequest.Builder(context).data(bannerModel).crossfade(true).build(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                AsyncImage(model = ImageRequest
+                                    .Builder(context)
+                                    .data(bannerModel)
+                                    .crossfade(true)
+                                    .build(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
-                            Surface(modifier = Modifier.size(32.dp).offset(x = 4.dp, y = 4.dp), shape = CircleShape, color = Color(0xFFFF6B35), shadowElevation = 4.dp) {
-                                Icon(Icons.Default.CameraAlt, null, tint = Color.White, modifier = Modifier.padding(6.dp))
+                            Surface(modifier = Modifier
+                                .size(32.dp)
+                                .offset(x = 4.dp, y = 4.dp),
+                                shape = CircleShape,
+                                color = Color(0xFFFF6B35),
+                                shadowElevation = 4.dp) {
+                                Icon(Icons.Default.CameraAlt,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.padding(6.dp)
+                                )
                             }
                         }
                     }
@@ -137,23 +196,38 @@ fun EditCommunityScreen(navController: NavController, communityId: Int) {
 
                 LabelText("Nama Komunitas")
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(value = nama, onValueChange = { nama = it }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE)))
+                OutlinedTextField(
+                    value = nama,
+                    onValueChange = { nama = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                        unfocusedBorderColor = Color(0xFFEEEEEE)
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 LabelText("Kategori")
                 Spacer(Modifier.height(8.dp))
-                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
+                ExposedDropdownMenuBox(expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = kategori, onValueChange = {}, readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE))
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                            unfocusedBorderColor = Color(0xFFEEEEEE))
                     )
-                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(Color.White)) {
+                    ExposedDropdownMenu(expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White)) {
                         Constants.COMMUNITY_CATEGORIES.forEach { option ->
-                            DropdownMenuItem(text = { Text(option) }, onClick = { kategori = option; expanded = false })
+                            DropdownMenuItem(text = { Text(option) },
+                                onClick = { kategori = option; expanded = false }
+                            )
                         }
                     }
                 }
@@ -162,43 +236,93 @@ fun EditCommunityScreen(navController: NavController, communityId: Int) {
 
                 LabelText("Lokasi")
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(value = lokasi, onValueChange = { lokasi = it }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE)))
+                OutlinedTextField(
+                    value = lokasi,
+                    onValueChange = { lokasi = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                        unfocusedBorderColor = Color(0xFFEEEEEE)
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 LabelText("Deskripsi")
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(value = deskripsi, onValueChange = { deskripsi = it }, modifier = Modifier.fillMaxWidth(), minLines = 4, shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE)))
+                OutlinedTextField(
+                    value = deskripsi,
+                    onValueChange = { deskripsi = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 4,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                        unfocusedBorderColor = Color(0xFFEEEEEE)
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 LabelText("Kontak Admin")
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(value = kontak, onValueChange = { kontak = it }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE)))
+                OutlinedTextField(
+                    value = kontak,
+                    onValueChange = { kontak = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                        unfocusedBorderColor = Color(0xFFEEEEEE)
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 LabelText("Link Grup WhatsApp")
                 Spacer(Modifier.height(8.dp))
-                OutlinedTextField(value = linkGrup, onValueChange = { linkGrup = it }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35), unfocusedBorderColor = Color(0xFFEEEEEE)))
+                OutlinedTextField(
+                    value = linkGrup,
+                    onValueChange = { linkGrup = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    placeholder = { Text("https://chat.whatsapp.com/...") },
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFFFF6B35),
+                        unfocusedBorderColor = Color(0xFFEEEEEE)
+                    )
+                )
 
                 Spacer(modifier = Modifier.height(56.dp))
 
                 Button(
                     onClick = {
+                        if (nama.isBlank() || lokasi.isBlank() || deskripsi.isBlank() || kategori.isBlank()) {
+                            Toast.makeText(context, "Data wajib mohon dilengkapi!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
                         val logoFile = if (newLogoUri != null) uriToFile(newLogoUri!!, context) else null
                         val bannerFile = if (newBannerUri != null) uriToFile(newBannerUri!!, context) else null
-                        viewModel.updateCommunity(communityId, nama, lokasi, deskripsi, kategori, kontak, linkGrup, logoFile, bannerFile)
-                        Toast.makeText(context, "Pembaruan Berhasil!", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
+
+                        viewModel.updateCommunity(communityId, nama, lokasi, deskripsi,
+                            kategori, kontak, linkGrup, logoFile, bannerFile)
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp).shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFFF6B35)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .shadow(12.dp,
+                            RoundedCornerShape(16.dp),
+                            spotColor = Color(0xFFFF6B35)),
                     shape = RoundedCornerShape(16.dp),
                     enabled = !viewModel.isLoading,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35))
                 ) {
-                    if (viewModel.isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                    else Text("Simpan Perubahan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    if (viewModel.isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp)
+                    } else {
+                        Text("Simpan Perubahan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
                 }
                 Spacer(modifier = Modifier.height(40.dp))
             }
